@@ -1,0 +1,20 @@
+package controle;
+
+import java.util.ArrayList;
+
+import modelo.Orcamento;
+
+public class PetProcess {
+
+	public static ArrayList<Orcamento> orcamentos = new ArrayList<>();
+	private static orcamentoDAO pd = new orcamentoDAO();
+	
+	public static void abrir() {
+		orcamentos = pd.ler();
+	}
+	
+	public static void salvar() {
+		pd.escrever(orcamentos);
+	}
+
+}

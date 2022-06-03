@@ -1,0 +1,253 @@
+package visao;
+
+import java.awt.Color;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.table.DefaultTableModel;
+
+import controle.OrcamentoProcess;
+import modelo.Orcamento;
+
+public class OrcamentoForm extends JFrame implements ActionListener {
+
+	private static final long serialVersionUID = 3L;
+	private JPanel painel;
+	private String imgIco = "./imgs/icone.png";
+	private JLabel id, Fornecedor, Produto, Preco;
+	private JTextField tfId, tfFornecedor, tfProduto, tfPreco;
+	private JComboBox<String> cbProduto;
+	private JScrollPane rolagem;
+	private JTable table;
+	private DefaultTableModel tableModel;
+	private JButton create, read, update, delete;
+
+	private int autoId = OrcamentoProcess.orcamentos.get(OrcamentoProcess.orcamentos.size() - 1).getId() + 1;
+	private SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+
+	OrcamentoForm() {
+		setTitle("Cadastro de Manutenções");
+		setBounds(150, 170, 640, 480);
+		setDefaultCloseOperation(EXIT_ON_CLOSE);
+		setIconImage(new ImageIcon(imgIco).getImage());
+		painel = new JPanel();
+		painel.setBackground(new Color(213, 233, 255));
+		setContentPane(painel);
+		setLayout(null);
+
+		id = new JLabel("Id:");
+		id.setBounds(10, 10, 120, 30);
+		painel.add(id);
+		Fornecedor = new JLabel("Fornecedor:");
+		Fornecedor.setBounds(10, 40, 120, 30);
+		painel.add(Fornecedor);
+		Produto = new JLabel("Produto:");
+		Produto.setBounds(10, 70, 120, 30);
+		painel.add(Produto);
+		Preco = new JLabel("Custo Hora:");
+		Preco.setBounds(10, 100, 120, 30);
+		painel.add(Preco);
+
+		tfId = new JTextField(String.format("%d", autoId));
+		tfId.setBounds(130, 10, 300, 25);
+		painel.add(tfId);
+		tfFornecedor = new JTextField(sdf.format(new Date()));
+		tfFornecedor.setBounds(130, 40, 300, 25);
+		painel.add(tfFornecedor);
+		cbProduto = new JComboBox<String>(new String[] { "Máquina Injetora 10", "Máquina Injetora 13",
+				"Máquina Injetora 23", "Esteira principal", "Esteira secundária", "Braço Robótico" });
+		cbProduto.setBounds(130, 70, 300, 25);
+		painel.add(cbProduto);
+		tfPreco = new JTextField("100,00");
+		tfPreco.setBounds(130, 100, 300, 25);
+		painel.add(tfPreco);
+
+		create = new JButton("Cadastrar");
+		read = new JButton("Filtrar");
+		update = new JButton("Alterar");
+		delete = new JButton("Excluir");
+
+		create.setBounds(455, 15, 150, 30);
+		read.setBounds(455, 50, 150, 30);
+		update.setBounds(455, 85, 150, 30);
+		delete.setBounds(455, 120, 150, 30);
+
+		painel.add(create);
+		painel.add(read);
+		painel.add(update);
+		painel.add(delete);
+
+		table = new JTable();
+		tableModel = new DefaultTableModel();
+		tableModel.addColumn("Id");
+		tableModel.addColumn("Fornecedor");
+		tableModel.addColumn("Produto");
+		tableModel.addColumn("Custo/Hora");
+		tableModel.addColumn("Tempo Gasto");
+		tableModel.addColumn("Total");
+		if (OrcamentoProcess.orcamentos.size() != 0) {
+			preencherTabela();
+		}
+		table = new JTable(tableModel);
+		rolagem = new JScrollPane(table);
+		rolagem.setBounds(10, 165, 600, 260);
+		painel.add(rolagem);
+
+		create.addActionListener(this);
+		read.addActionListener(this);
+		update.addActionListener(this);
+		delete.addActionListener(this);
+
+		table.addMouseListener(new MouseAdapter() {
+			public void mouseClicked(MouseEvent e) {
+				int lin = table.getSelectedRow();
+				int id = Integer.parseInt(table.getValueAt(lin, 0).toString());
+				Orcamento Orcamento = new Orcamento(id);
+				int indice = OrcamentoProcess.orcamentos.indexOf(Orcamento);
+				preencheCampos(indice);
+			}
+		});
+
+		tfId.setEnabled(false);
+		tfFornecedor.setEnabled(false);
+		update.setEnabled(false);
+		delete.setEnabled(false);
+
+	}
+
+	
+	private void limparCampos() {
+		tfId.setText(String.format("%d", autoId));
+		tfPreco.setText("100,00");
+		tfTempoGasto.setText("1,00");
+		tfFornecedor.setEnabled(false);
+		create.setEnabled(true);
+		update.setEnabled(false);
+		delete.setEnabled(false);
+	}
+
+	private void preencheCampos(int indice) {
+		tfId.setText(OrcamentoProcess.orcamentos.get(indice).getId("s"));
+		tfFornecedor.setText(OrcamentoProcess.orcamentos.get(indice).getFornecedor("s"));
+		cbProduto
+				.setSelectedIndex(obterIndiceProduto(OrcamentoProcess.orcamentos.get(indice).getProduto()));
+		tfPreco.setText(OrcamentoProcess.orcamentos.get(indice).getPreco("s"));
+		tfTempoGasto.setText(OrcamentoProcess.orcamentos.get(indice).getTempoGasto("s"));
+		create.setEnabled(false);
+		update.setEnabled(true);
+		delete.setEnabled(true);
+		tfFornecedor.setEnabled(true);
+	}
+
+	// CREATE - CRUD
+	private void cadastrar() {
+		if (tfPreco.getText().length() != 0 ) {
+			OrcamentoProcess.orcamentos.add(new Orcamento(autoId, tfId.getText(),
+					tfProduto.getText().toString(), tfPreco.getText()));
+			autoId++;
+			preencherTabela();
+			limparCampos();
+			OrcamentoProcess.salvar();
+		} else {
+			JOptionPane.showMessageDialog(this, "Favor preencher todos os campos.");
+		}
+	}
+
+	// READ - CRUD
+	private void buscar() {
+		String entrada = JOptionPane.showInputDialog(this, "Digite o Id ou Produto ou Fornecedor da manutenção:");
+		boolean isNumeric = true;
+		if (entrada != null && !entrada.equals("")) {
+			for (int i = 0; i < entrada.length(); i++) {
+				if (!Character.isDigit(entrada.charAt(i))) {
+					isNumeric = false;
+					limparCampos();
+				}
+			}
+		} else {
+			isNumeric = false;
+			limparCampos();
+		}
+		if (isNumeric) {
+			int id = Integer.parseInt(entrada);
+			Orcamento Orcamento = new Orcamento(id);
+			if (OrcamentoProcess.orcamentos.contains(Orcamento)) {
+				int indice = OrcamentoProcess.orcamentos.indexOf(Orcamento);
+				preencheCampos(indice);
+				preencherTabela();
+			} else {
+				JOptionPane.showMessageDialog(this, "Produto não encontrado");
+			}
+		} else {
+			preencherTabela(entrada);
+		}
+	}
+
+	// UPDATE - CRUD
+	private void alterar() {
+		if (tfPreco.getText().length() != 0) {
+			int id = Integer.parseInt(tfId.getText());
+			Orcamento Orcamento = new Orcamento(id);
+			int indice = OrcamentoProcess.orcamentos.indexOf(Orcamento);
+			OrcamentoProcess.orcamentos.set(indice, new Orcamento(tfId.getText(), tfFornecedor.getText(),
+					tfProduto.getSelectedItem().toString(), tfPreço.getText()));
+			autoId++;
+			preencherTabela();
+			limparCampos();
+			OrcamentoProcess.salvar();
+		} else {
+			JOptionPane.showMessageDialog(this, "Favor preencher todos os campos.");
+		}
+	}
+
+	// DELETE - CRUD
+	private void excluir() {
+		int id = Integer.parseInt(tfId.getText());
+		Orcamento Orcamento = new Orcamento(id);
+		int indice = OrcamentoProcess.orcamentos.indexOf(Orcamento);
+		OrcamentoProcess.orcamentos.remove(indice);
+		preencherTabela();
+		limparCampos();
+		create.setEnabled(true);
+		update.setEnabled(false);
+		delete.setEnabled(false);
+		tfId.setText(String.format("%d", autoId));
+		OrcamentoProcess.salvar();
+	}
+
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		if (e.getSource() == create) {
+			cadastrar();
+		}
+		if (e.getSource() == read) {
+			buscar();
+		}
+		if (e.getSource() == update) {
+			alterar();
+		}
+		if (e.getSource() == delete) {
+			excluir();
+		}
+	}
+
+	public static void main(String[] args) {
+		OrcamentoProcess.abrir();
+		new OrcamentoForm().setVisible(true);
+	}
+
+}
