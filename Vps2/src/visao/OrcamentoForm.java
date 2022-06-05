@@ -90,8 +90,10 @@ public class OrcamentoForm extends JFrame implements ActionListener {
 		delete = new JButton("Excluir");
 		create.setBounds(600, 25, 110, 40);
 		create.setBackground(new Color(0,191,255));
+		create.setBorder(BorderFactory.createMatteBorder(1, 1, 1, 1, Color.BLACK));
 		read.setBounds(600, 75, 110, 40);
 		read.setBackground(new Color(0,191,255));
+		read.setBorder(BorderFactory.createMatteBorder(1, 1, 1, 1, Color.BLACK));
 		update.setBounds(600, 125, 110, 40);
 		update.setBackground(new Color(0,191,255));
 		delete.setBounds(600, 175, 110, 40);
@@ -122,14 +124,17 @@ public class OrcamentoForm extends JFrame implements ActionListener {
 			autoId++;
 			preencherAreaDeTexto();
 			limparCampos();
+			OrcamentoProcess.salvar();
 		} else {
 			JOptionPane.showMessageDialog(this, "Favor preencher todos os campos.");
 		}
 	}
 
 	private void limparCampos() {
+		tfFornecedor.setText(null);
 		tfproduto.setText(null);
 		tfpreco.setText(null);
+		tfId.setText(String.format("%d",autoId));
 	}
 
 	private void preencherAreaDeTexto() {
@@ -142,7 +147,7 @@ public class OrcamentoForm extends JFrame implements ActionListener {
 
 	
 	private void buscar() {
-		String entrada = JOptionPane.showInputDialog(this, "Digite o Id do Orçamento:");
+		String entrada = JOptionPane.showInputDialog(this, "Id do Orçamento:");
 
 		boolean isNumeric = true;
 		if (entrada != null) {
@@ -156,12 +161,13 @@ public class OrcamentoForm extends JFrame implements ActionListener {
 		}
 		if (isNumeric) {
 			int id = Integer.parseInt(entrada);
-			Orcamento pet = new Orcamento(id);
-			if (OrcamentoProcess.orcamentos.contains(pet)) {
-				int indice = OrcamentoProcess.orcamentos.indexOf(pet);
-				tfId.setText(OrcamentoProcess.orcamentos.get(indice).getId("s"));
+			Orcamento ID = new Orcamento(id);
+			if (OrcamentoProcess.orcamentos.contains(ID)) {
+				int indice = OrcamentoProcess.orcamentos.indexOf(ID);
+				tfId.setText(OrcamentoProcess.orcamentos.get(indice).getId(""));
 				tfFornecedor.setText(OrcamentoProcess.orcamentos.get(indice).getfornecedor());
 				tfproduto.setText(OrcamentoProcess.orcamentos.get(indice).getproduto());
+				tfpreco.setText(String.valueOf(OrcamentoProcess.orcamentos.get(indice).getpreco()));
 
 				create.setEnabled(false);
 				update.setEnabled(true);
@@ -177,8 +183,8 @@ public class OrcamentoForm extends JFrame implements ActionListener {
 	
 	private void alterar() {
 		int id = Integer.parseInt(tfId.getText());
-		Orcamento pet = new Orcamento(id);
-		int indice = OrcamentoProcess.orcamentos.indexOf(pet);
+		Orcamento ID = new Orcamento(id);
+		int indice = OrcamentoProcess.orcamentos.indexOf(ID);
 		if (tfproduto.getText().length() != 0 && tfpreco.getText().length() != 0) {
 
 			df.setCurrency(Currency.getInstance(BRASIL));
@@ -197,7 +203,19 @@ public class OrcamentoForm extends JFrame implements ActionListener {
 	tfId.setText(String.format("%d",autoId));
 	OrcamentoProcess.salvar();
 	}
-
+	private void excluir() {
+        int id = Integer.parseInt(tfId.getText());
+        Orcamento m = new Orcamento(id);
+        int indice = OrcamentoProcess.orcamentos.indexOf(m);
+        OrcamentoProcess.orcamentos.remove(indice);
+        preencherAreaDeTexto();
+        limparCampos();
+        create.setEnabled(true);
+        update.setEnabled(false);
+        delete.setEnabled(false);
+        tfId.setText(String.format("%d", autoId));
+        OrcamentoProcess.salvar();
+    }
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource() == create) {
@@ -209,6 +227,9 @@ public class OrcamentoForm extends JFrame implements ActionListener {
 		if (e.getSource() == update) {
 			alterar();
 		}
+		if (e.getSource() == delete) {
+			excluir();
+		}
 	
 	}
 	public static void main(String[] agrs) throws ParseException {
@@ -216,5 +237,5 @@ public class OrcamentoForm extends JFrame implements ActionListener {
 		OrcamentoProcess.abrir();
 		new OrcamentoForm().setVisible(true);
 	}
-
+	
 }

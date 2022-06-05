@@ -77,6 +77,7 @@ public class Orcamento {
 	public void setpreco(Double preco) {
 		this.preco = preco;
 	}
+	
 
 
 	@Override
