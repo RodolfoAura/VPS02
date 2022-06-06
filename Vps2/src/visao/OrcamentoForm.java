@@ -40,9 +40,10 @@ public class OrcamentoForm extends JFrame implements ActionListener {
 
 	OrcamentoForm() {
 		setTitle("Registro de orçamento");
-		setBounds(100, 100, 800, 600);
+		setBounds(100, 100, 500, 500);
+		setBackground(new Color(0, 191, 255));
 		painel = new JPanel();
-		painel.setBackground(new Color(105,105,105));
+		painel.setBackground(new Color(105, 255, 100));
 		setContentPane(painel);
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		setLayout(null);
@@ -60,43 +61,50 @@ public class OrcamentoForm extends JFrame implements ActionListener {
 		preco.setBounds(20, 125, 120, 30);
 		painel.add(preco);
 		rotulos = new JLabel("Id | Fornecedor | Produto | Preço");
-		rotulos.setBounds(20, 310, 500, 30);
+		rotulos.setBounds(20, 230, 500, 30);
 		painel.add(rotulos);
 
 		tfId = new JTextField(String.format("%d", autoId));
 		tfId.setEditable(false);
 		tfId.setBounds(140, 25, 140, 30);
 		painel.add(tfId);
+		
 		tfFornecedor = new JTextField();
-		tfFornecedor.setBounds(140, 60, 255, 30);
+		tfFornecedor.setBounds(140, 60, 140, 30);
 		painel.add(tfFornecedor);
+		
 		tfproduto = new JTextField();
-		tfproduto.setBounds(140, 95, 255, 30);
+		tfproduto.setBounds(140, 95, 140, 30);
 		painel.add(tfproduto);
+		
 		tfpreco = new JTextField();
-		tfpreco.setBounds(140, 130, 255, 30);
+		tfpreco.setBounds(140, 130, 140, 30);
 		painel.add(tfpreco);
+		
 		verResultados = new JTextArea();
 		verResultados.setEditable(false);
 		verResultados.setBorder(BorderFactory.createMatteBorder(1, 1, 1, 1, Color.BLACK));
 		preencherAreaDeTexto();
 		rolagem = new JScrollPane(verResultados);
-		rolagem.setBounds(20, 340, 740, 200);
+		rolagem.setBounds(20, 250, 440, 200);
 		painel.add(rolagem);
 
 		create = new JButton("Cadastrar");
 		read = new JButton("Buscar");
 		update = new JButton("Atualizar");
 		delete = new JButton("Excluir");
-		create.setBounds(600, 25, 110, 40);
-		create.setBackground(new Color(0,191,255));
+		
+		create.setBounds(330, 25, 110, 40);
+		create.setBackground(new Color(0, 191, 255));
 		create.setBorder(BorderFactory.createMatteBorder(1, 1, 1, 1, Color.BLACK));
-		read.setBounds(600, 75, 110, 40);
-		read.setBackground(new Color(0,191,255));
+		read.setBounds(330, 75, 110, 40);
+		read.setBackground(new Color(0, 191, 255));
 		read.setBorder(BorderFactory.createMatteBorder(1, 1, 1, 1, Color.BLACK));
-		update.setBounds(600, 125, 110, 40);
-		update.setBackground(new Color(0,191,255));
-		delete.setBounds(600, 175, 110, 40);
+		update.setBounds(330, 125, 110, 40);
+		update.setBackground(new Color(0, 191, 255));
+		delete.setBounds(330, 175, 110, 40);
+		delete.setBackground(new Color(0, 191, 255));
+		
 		update.setEnabled(false);
 		delete.setEnabled(false);
 		painel.add(create);
@@ -112,15 +120,13 @@ public class OrcamentoForm extends JFrame implements ActionListener {
 
 	}
 
-
 	private void cadastrar() {
 		if (tfproduto.getText().length() != 0 && tfpreco.getText().length() != 0) {
 
-			
 			df.setCurrency(Currency.getInstance(BRASIL));
 
 			OrcamentoProcess.orcamentos.add(
-					new Orcamento(autoId, tfFornecedor.getText().toString(), tfproduto.getText(), tfpreco.getText()));
+					new Orcamento(autoId, tfFornecedor.getText(), tfproduto.getText(), tfpreco.getText()));
 			autoId++;
 			preencherAreaDeTexto();
 			limparCampos();
@@ -134,18 +140,20 @@ public class OrcamentoForm extends JFrame implements ActionListener {
 		tfFornecedor.setText(null);
 		tfproduto.setText(null);
 		tfpreco.setText(null);
-		tfId.setText(String.format("%d",autoId));
+		tfId.setText(String.format("%d", autoId));
 	}
 
 	private void preencherAreaDeTexto() {
-		texto = ""; 
+		texto = "";
+		for (Orcamento orcamento : OrcamentoProcess.orcamentos) {
+			OrcamentoProcess.compararPrecos(orcamento.getproduto());
+		}
 		for (Orcamento p : OrcamentoProcess.orcamentos) {
 			texto += p.toString();
 		}
 		verResultados.setText(texto);
 	}
 
-	
 	private void buscar() {
 		String entrada = JOptionPane.showInputDialog(this, "Id do Orçamento:");
 
@@ -177,10 +185,10 @@ public class OrcamentoForm extends JFrame implements ActionListener {
 				JOptionPane.showMessageDialog(this, "Orçamento não encontrado");
 			}
 		}
+		preencherAreaDeTexto();
 
 	}
 
-	
 	private void alterar() {
 		int id = Integer.parseInt(tfId.getText());
 		Orcamento ID = new Orcamento(id);
@@ -189,33 +197,36 @@ public class OrcamentoForm extends JFrame implements ActionListener {
 
 			df.setCurrency(Currency.getInstance(BRASIL));
 
-		OrcamentoProcess.orcamentos.set(indice,
-				new Orcamento(id, tfFornecedor.getText().toString(), tfproduto.getText(), tfpreco.getText()));
+			OrcamentoProcess.orcamentos.set(indice,
+					new Orcamento(id, tfFornecedor.getText().toString(), tfproduto.getText(), tfpreco.getText()));
+			preencherAreaDeTexto();
+			limparCampos();
+		} else {
+			JOptionPane.showMessageDialog(this, "Favor preencher todos os campos.");
+		}
+
+		create.setEnabled(true);
+		update.setEnabled(false);
+		delete.setEnabled(false);
+		tfId.setText(String.format("%d", autoId));
+		OrcamentoProcess.salvar();
+		preencherAreaDeTexto();
+	}
+
+	private void excluir() {
+		int id = Integer.parseInt(tfId.getText());
+		Orcamento m = new Orcamento(id);
+		int indice = OrcamentoProcess.orcamentos.indexOf(m);
+		OrcamentoProcess.orcamentos.remove(indice);
 		preencherAreaDeTexto();
 		limparCampos();
-	}else {
-		JOptionPane.showMessageDialog(this, "Favor preencher todos os campos.");
+		create.setEnabled(true);
+		update.setEnabled(false);
+		delete.setEnabled(false);
+		tfId.setText(String.format("%d", autoId));
+		OrcamentoProcess.salvar();
 	}
-		
-	create.setEnabled(true);
-	update.setEnabled(false);
-	delete.setEnabled(false);
-	tfId.setText(String.format("%d",autoId));
-	OrcamentoProcess.salvar();
-	}
-	private void excluir() {
-        int id = Integer.parseInt(tfId.getText());
-        Orcamento m = new Orcamento(id);
-        int indice = OrcamentoProcess.orcamentos.indexOf(m);
-        OrcamentoProcess.orcamentos.remove(indice);
-        preencherAreaDeTexto();
-        limparCampos();
-        create.setEnabled(true);
-        update.setEnabled(false);
-        delete.setEnabled(false);
-        tfId.setText(String.format("%d", autoId));
-        OrcamentoProcess.salvar();
-    }
+
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource() == create) {
@@ -230,12 +241,13 @@ public class OrcamentoForm extends JFrame implements ActionListener {
 		if (e.getSource() == delete) {
 			excluir();
 		}
-	
+
 	}
+
 	public static void main(String[] agrs) throws ParseException {
-	
+
 		OrcamentoProcess.abrir();
 		new OrcamentoForm().setVisible(true);
 	}
-	
+
 }

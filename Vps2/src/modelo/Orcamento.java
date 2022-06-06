@@ -13,7 +13,8 @@ public class Orcamento {
 	private String fornecedor;
 	private String produto;
 	private Double preco;
-
+	private boolean MaisBarato = false;
+	
 	private final Locale BRASIL = new Locale("pt", "BR");
 	private DecimalFormat df = new DecimalFormat("#.00");
 
@@ -28,6 +29,7 @@ public class Orcamento {
 		this.fornecedor = fornecedor;
 		this.produto = produto;
 		this.preco = Double.parseDouble(preco);
+		this.MaisBarato = false;
 		
 	}
 
@@ -45,7 +47,9 @@ public class Orcamento {
 	public int getId() {
 		return id;
 	}
-
+	public void setMaisBarato(boolean aux) {
+		this.MaisBarato = aux;
+	}
 	public String getId(String s) {
 		return String.format("%d", id);
 	}
@@ -99,11 +103,13 @@ public class Orcamento {
 
 	@Override
 	public String toString() {
-		return id + "\t" + fornecedor + "\t" + produto + "\t" + preco +"\n";
+		return id + "\t" + fornecedor + "\t" + produto + "\t" + preco +"\t" + MaisBarato + "\n";
 	}
 
 	public String toCSV() {
 		return id + ";" + fornecedor + ";" + produto + ";" + preco + "\r\n";
 	}
+
+
 
 }
